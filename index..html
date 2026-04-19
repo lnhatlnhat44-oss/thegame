@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Shop Thẻ Fix</title>
+
+<style>
+body{
+    margin:0;
+    font-family:Arial;
+    background:linear-gradient(135deg,#4facfe,#8e44ad);
+    color:#fff;
+}
+
+header{
+    text-align:center;
+    padding:20px;
+    font-size:24px;
+    font-weight:bold;
+}
+
+.container{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:20px;
+    padding:20px;
+}
+
+.card{
+    background:rgba(255,255,255,0.1);
+    padding:15px;
+    border-radius:15px;
+    width:250px;
+    text-align:center;
+}
+
+button{
+    padding:8px 12px;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    margin:5px;
+}
+
+.buy{ background:#00c6ff; color:#fff; }
+
+.qty{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    gap:10px;
+}
+
+input{
+    width:40px;
+    text-align:center;
+    border:none;
+    border-radius:5px;
+}
+
+#cart{
+    position:fixed;
+    right:10px;
+    top:10px;
+    background:rgba(0,0,0,0.4);
+    padding:10px;
+    border-radius:10px;
+    width:220px;
+}
+
+#resultBox{
+    position:fixed;
+    bottom:10px;
+    left:10px;
+    right:10px;
+    background:#fff;
+    color:#000;
+    max-height:250px;
+    overflow:auto;
+    border-radius:10px;
+    padding:10px;
+    display:none;
+}
+</style>
+</head>
+
+<body>
+
+<header>SHOP THẺ GAME FIX</header>
+
+<div id="cart">
+    <div>🛒 Giỏ hàng</div>
+    <div id="cartList"></div>
+    <div>Tổng: <b id="total">0</b>đ</div>
+    <button onclick="checkout()">Thanh toán</button>
+</div>
+
+<div class="container" id="products"></div>
+
+<div id="resultBox"></div>
+
+<script>
+let products=[
+    {name:"Thẻ Viettel 50k",price:45000},
+    {name:"Thẻ Garena 50k",price:45000},
+    {name:"Thẻ Vinaphone 100k",price:95000}
+];
+
+let cart=[];
+
+function render(){
+    let html="";
+    products.forEach((p,i)=>{
+        html+=`
+        <div class="card">
+            <h3>${p.name}</h3>
+            <p>${p.price.toLocaleString()}đ</p>
+
+            <div class="qty">
+                <button onclick="minus(${i})">-</button>
+                <input id="q${i}" value="1" readonly>
+                <button onclick="plus(${i})">+</button>
+            </div>
+
+            <button class="buy" onclick="add(${i})">Mua</button>
+        </div>`;
+    });
+    document.getElementById("products").innerHTML=html;
+}
+
+function plus(i){
+    document.getElementById("q"+i).value++;
+}
+
+function minus(i){
+    let q=document.getElementById("q"+i);
+    if(q.value>1) q.value--;
+}
+
+function add(i){
+    let qty=+document.getElementById("q"+i).value;
+    cart.push({...products[i],qty});
+    updateCart();
+}
+
+function updateCart(){
+    let html="",total=0;
+
+    cart.forEach(c=>{
+        total+=c.price*c.qty;
+        html+=`<div>${c.name} x${c.qty}</div>`;
+    });
+
+    document.getElementById("cartList").innerHTML=html;
+    document.getElementById("total").innerText=total.toLocaleString();
+}
+
+function checkout(){
+    alert("MB Bank: 0941639570");
+
+    setTimeout(()=>{
+        generateCards();
+    },1500);
+}
+
+/* ===== FIX PART ===== */
+
+let used=new Set(JSON.parse(localStorage.getItem("used")||"[]"));
+
+function gen(){
+    let s="";
+    for(let i=0;i<12;i++) s+=Math.floor(Math.random()*10);
+    return s;
+}
+
+function unique(){
+    let c;
+    do{ c=gen(); }
+    while(used.has(c));
+
+    used.add(c);
+    localStorage.setItem("used",JSON.stringify([...used]));
+    return c;
+}
+
+function generateCards(){
+    let box=document.getElementById("resultBox");
+    box.style.display="block";
+    box.innerHTML="<h3>THẺ CỦA BẠN</h3>";
+
+    cart.forEach(c=>{
+        for(let i=0;i<c.qty;i++){
+            box.innerHTML+=`
+            <div style="border:1px solid #ccc;margin:5px;padding:5px">
+                <div>Mã: ${unique()}</div>
+                <div>Seri: ${unique()}</div>
+            </div>`;
+        }
+    });
+
+    cart=[];
+    updateCart();
+}
+
+render();
+</script>
+
+</body>
+</html>
